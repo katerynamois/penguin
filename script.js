@@ -76,3 +76,24 @@ function showHighscore(score) {
 document.getElementById("name").addEventListener("input", function() {
     document.getElementById("submit").disabled = !this.value.trim();
 });
+const playerElement = document.querySelector('[data-player]');
+const scoreElement = document.querySelector('[data-score]');
+const sendButton = document.querySelector('[data-send-button]');
+const responsePreviewElement = document.querySelector('[data-response-preview]');
+
+const player = generatePirateName();
+const score = Math.round(Math.random() * 1000);
+
+playerElement.textContent = player;
+scoreElement.textContent = score.toString();
+
+function generatePirateName() {
+    const firstNames = ["Frosty", "Icy", "Snowbeard", "Captain Waddle", "Blizzard", "Chilly", "Arctic", "Flipper", "Glacier", "Stormy"];
+    const lastNames = ["McIceberg", "Snowboots", "Krillchaser", "Deepfreezer", "Squawkbeard", "Fishmonger", "Icetooth", "Winterfeather", "Driftbeak", "Coldfin"];
+
+    // Pick a random first and last name
+    const randomFirstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+    const randomLastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+
+    return `${randomFirstName} ${randomLastName}`;
+}
