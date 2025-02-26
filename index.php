@@ -1,16 +1,36 @@
+<?php
+    $token = '23|RjsxnAYvvZHn30Hc2mZfuiwG0xkGdQ2brHaRJmKlac750c6e';
+    $url = 'https://highscores.martindilling.com/api/v1/games';
+    $headers = [
+        'Accept: application/json',
+        'Content-type: application/json',
+        'Authorization: Bearer ' . $token,
+    ];
+
+    $curl = curl_init();
+    curl_setopt_array($curl, [
+        CURLOPT_URL => $url,
+        CURLOPT_HTTPHEADER => $headers,
+        CURLOPT_RETURNTRANSFER => true,
+    ]);
+    $responseData = curl_exec($curl);
+    curl_close($curl);
+
+    $responseJson = json_decode($responseData);
+
+?>
 <!DOCTYPE html>
 <html lang="da">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Memory Game</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="script.js" defer></script>
     <style>
         * {
             font-family: Arial, sans-serif;
             text-align: center;
             margin: 0;
+            padding: 0;
         }
         .game-board {
             display: grid;
@@ -29,10 +49,11 @@
             font-size: 2em;
             cursor: pointer;
             border-radius: 5px;
+            margin: 25px 0 0 0;
         }
         .hidden {
-            background-color: #444;
-            color: #444;
+            background-color: #1a2647;
+            color: #1a2647;
         }
         .container {
             display: flex;
@@ -124,15 +145,15 @@
         }
     }
 
-    // Function to generate a random pirate penguin name
-    function generatePirateName() {
+    // Function to generate a random name
+    function generateRandomName() {
         const firstNames = ["Frosty", "Icy", "Snowbeard", "Captain Waddle", "Blizzard", "Chilly", "Arctic", "Flipper", "Glacier", "Stormy"];
         const lastNames = ["McIceberg", "Snowboots", "Krillchaser", "Deepfreezer", "Squawkbeard", "Fishmonger", "Icetooth", "Winterfeather", "Driftbeak", "Coldfin"];
         return `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`;
     }
 
-    // Display random pirate name and random score
-    document.querySelector('[data-player]').textContent = generatePirateName();
+    // Display random name and random score
+    document.querySelector('[data-player]').textContent = generateRandomName();
     document.querySelector('[data-score]').textContent = Math.round(Math.random() * 1000).toString();
 </script>
 </body>
