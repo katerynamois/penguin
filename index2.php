@@ -6,28 +6,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Highscore API Connection</title>
+    <title>Memory game</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="title">
-    Highscore API Connection
-</div>
-<div class="moves"></div>
 <?php if (isset($_SERVER['PHP_AUTH_USER'])): ?>
     <div class="admin">
         <a href="admin.php">Admin</a>
     </div>
 <?php endif; ?>
+<div class="container"></div>
+<div class="title">Penguin</div>
+<div class="moves"></div>
 <div class="credits">
     <a href="https://github.com/madh-zealand/highscores-api" target="_blank">Highscores API Github</a>
 </div>
+
 <div class="game-board" id="gameBoard"></div>
-<div class="container">
-    <div data-player class="player"></div>
-    <div data-score class="score"></div>
-    <button data-send-button class="send-button">Send</button>
-    <pre data-response-preview class="response-preview"></pre>
+
+<!-- Player name input form -->
+<div id="player-name-container" style="display: none;">
+    <label for="player-name">Enter your name:</label>
+    <input type="text" id="player-name" placeholder="Enter your player name">
+    <button id="submit-player-name">Submit</button>
+</div>
+
+<!-- Display player name & score (hidden initially) -->
+<div id="player-info" style="display: none;">
+    <h3>Player: <span data-player class="player"></span></h3>
+    <p>Score: <span data-score class="score"></span></p>
 </div>
 
 <script>
@@ -96,55 +103,42 @@
         return Math.max(score, 0);
     }
 
-
+    // Highscore Submission
     const playerElement = document.querySelector('[data-player]');
     const scoreElement = document.querySelector('[data-score]');
-    const sendButton = document.querySelector('[data-send-button]');
-    const responsePreviewElement = document.querySelector('[data-response-preview]');
+    const playerNameInput = document.getElementById('player-name');
+    const submitPlayerNameButton = document.getElementById('submit-player-name');
+    const playerInfo = document.getElementById('player-info');
+    const playerNameContainer = document.getElementById('player-name-container');
 
-    const player = generatePirateName();
-    const score = Math.round(Math.random() * 1000);
+    let player = 'Guest';
 
-    playerElement.textContent = player;
-    scoreElement.textContent = score.toString();
+    submitPlayerNameButton.addEventListener('click', () => {
+        player = playerNameInput.value.trim() || 'Guest';
+        playerElement.textContent = player;
 
+        const score = calculateHighscore(moves);
+        scoreElement.textContent = score;
 
-    function generatePirateName() {
-        const firstNames = ["Blackbeard", "Salty", "One-Eyed", "Mad", "Captain", "Peg-Leg", "Red", "Stormy", "Jolly", "Barnacle"];
-        const lastNames = ["McScurvy", "Silverhook", "Rumbelly", "Seadog", "Plankwalker", "Bones", "Squidbeard", "Driftwood", "Sharkbait", "Bootstraps"];
+        // Hide input form & show player info
+        playerNameContainer.style.display = 'none';
+        playerInfo.style.display = 'block';
 
-        const randomFirstName = firstNames[Math.floor(Math.random() * firstNames.length)];
-        const randomLastName = lastNames[Math.floor(Math.random() * lastNames.length)];
-
-        return `${randomFirstName} ${randomLastName}`;
-    }
-
-    sendButton.addEventListener('click', () => {
-        fetch(
-            'submit-highscore.php',
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    player: player,
-                    score: score,
-                }),
-            }
-        )
-            .then(function (response) {
-                return response.json();
+        // Automatically send the score
+        fetch('submit-highscore.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ player: player, score: score })
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Highscore submitted successfully", data);
             })
-            .then(function (data) {
-                console.log(data);
-                responsePreviewElement.textContent = JSON.stringify(data, null, 2);
-            })
-            .catch(function (error){
-                console.error(error);
-                responsePreviewElement.textContent = JSON.stringify(error, null, 2);
+            .catch(error => {
+                console.error("Error submitting highscore", error);
             });
     });
 </script>
+
 </body>
 </html>
