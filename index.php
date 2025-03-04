@@ -1,109 +1,51 @@
 <?php
-    $token = '23|RjsxnAYvvZHn30Hc2mZfuiwG0xkGdQ2brHaRJmKlac750c6e';
-    $url = 'https://highscores.martindilling.com/api/v1/games';
-    $headers = [
-        'Accept: application/json',
-        'Content-type: application/json',
-        'Authorization: Bearer ' . $token,
-    ];
-
-    $curl = curl_init();
-    curl_setopt_array($curl, [
-        CURLOPT_URL => $url,
-        CURLOPT_HTTPHEADER => $headers,
-        CURLOPT_RETURNTRANSFER => true,
-    ]);
-    $responseData = curl_exec($curl);
-    curl_close($curl);
-
-    $responseJson = json_decode($responseData);
 
 ?>
-<!DOCTYPE html>
-<html lang="da">
+<!doctype html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Memory Game</title>
-    <style>
-        * {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-        }
-        .game-board {
-            display: grid;
-            grid-template-columns: repeat(4, 80px);
-            gap: 10px;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-        .card {
-            width: 80px;
-            height: 80px;
-            background-color: #ddd;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2em;
-            cursor: pointer;
-            border-radius: 5px;
-            margin: 25px 0 0 0;
-        }
-        .hidden {
-            background-color: #1a2647;
-            color: #1a2647;
-        }
-        .container {
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-            align-items: center;
-        }
-        .player {
-            font-size: 32px;
-        }
-        .score {
-            font-size: 72px;
-        }
-        .send-button {
-            background-image: linear-gradient(92.88deg, #75dad1 9.16%, #43b7cc 43.89%, #3fc5d7 64.72%);
-            border-radius: 8px;
-            border-style: none;
-            color: #FFFFFF;
-            cursor: pointer;
-            font-size: 16px;
-            height: 4rem;
-            padding: 0 1.6rem;
-            text-align: center;
-            transition: all .5s;
-        }
-        .send-button:hover {
-            box-shadow: rgba(80, 63, 205, 0.5) 0 1px 30px;
-            transition-duration: .1s;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Memory game</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="game-board" id="gameBoard"></div>
-<div class="container">
-    <div data-player class="player"></div>
-    <div data-score class="score"></div>
-    <button data-send-button class="send-button">Send</button>
+<?php if (isset($_SERVER['PHP_AUTH_USER'])): ?>
+    <div class="admin">
+        <a href="admin.php">Admin</a>
+    </div>
+<?php endif; ?>
+<div class="container"></div>
+<div class="title">Penguin</div>
+<div class="moves"></div>
+<div class="credits">
+    <a href="https://github.com/madh-zealand/highscores-api" target="_blank">Highscores API Github</a>
 </div>
-<script>
-    // Array of card emojis, each appearing twice to form pairs
-    const cardsArray = ['🐧', '🐧', '🐱', '🐱', '🐶', '🐶', '🦊', '🦊', '🐸', '🐸', '🦁', '🦁', '🐰', '🐰', '🐢', '🐢'];
 
-    // Shuffle the cards randomly
+<div class="game-board" id="gameBoard"></div>
+
+<!-- Player name input form -->
+<div id="player-name-container" style="display: none;">
+    <label for="player-name">Enter your name:</label>
+    <input type="text" id="player-name" placeholder="Enter your player name">
+    <button id="submit-player-name">Submit</button>
+</div>
+
+<!-- Display player name & score (hidden initially) -->
+<div id="player-info" style="display: none;">
+    <h3>Player: <span data-player class="player"></span></h3>
+    <p>Score: <span data-score class="score"></span></p>
+</div>
+
+<script>
+    // Game setup
+    const cardsArray = ['🐧', '🐧', '🐱', '🐱', '🐶', '🐶', '🦊', '🦊', '🐸', '🐸', '🦁', '🦁', '🐰', '🐰', '🐢', '🐢'];
     let shuffledCards = cardsArray.sort(() => 0.5 - Math.random());
     let gameBoard = document.getElementById('gameBoard');
     let flippedCards = [];
     let matchedPairs = 0;
     let moves = 0;
 
-    // Create card elements dynamically
     shuffledCards.forEach((emoji, index) => {
         let card = document.createElement('div');
         card.classList.add('card', 'hidden');
@@ -114,27 +56,35 @@
         gameBoard.appendChild(card);
     });
 
-    // Function to flip a card
+    // Moves display
+    const movesElement = document.querySelector('.moves');
+    movesElement.textContent = `Moves: ${moves}`;
+
     function flipCard(event) {
         let selectedCard = event.target;
+
         if (flippedCards.length < 2 && selectedCard.classList.contains('hidden')) {
             selectedCard.classList.remove('hidden');
             selectedCard.innerText = selectedCard.dataset.emoji;
             flippedCards.push(selectedCard);
         }
+
         if (flippedCards.length === 2) {
             moves++;
+            movesElement.textContent = `Moves: ${moves}`;
             setTimeout(checkMatch, 800);
         }
     }
 
-    // Function to check if two flipped cards match
     function checkMatch() {
         if (flippedCards[0].dataset.emoji === flippedCards[1].dataset.emoji) {
             flippedCards = [];
             matchedPairs++;
             if (matchedPairs === cardsArray.length / 2) {
-                setTimeout(() => alert(`Game Over! Moves: ${moves}`), 500);
+                setTimeout(() => {
+                    alert(`Game Over! Moves: ${moves}`);
+                    document.getElementById('player-name-container').style.display = 'block';
+                }, 500);
             }
         } else {
             flippedCards.forEach(card => {
@@ -145,16 +95,50 @@
         }
     }
 
-    // Function to generate a random name
-    function generateRandomName() {
-        const firstNames = ["Frosty", "Icy", "Snowbeard", "Captain Waddle", "Blizzard", "Chilly", "Arctic", "Flipper", "Glacier", "Stormy"];
-        const lastNames = ["McIceberg", "Snowboots", "Krillchaser", "Deepfreezer", "Squawkbeard", "Fishmonger", "Icetooth", "Winterfeather", "Driftbeak", "Coldfin"];
-        return `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`;
+    function calculateHighscore(moves) {
+        let score = 160;
+        if (moves > 16) {
+            score -= (moves - 16) * 5;
+        }
+        return Math.max(score, 0);
     }
 
-    // Display random name and random score
-    document.querySelector('[data-player]').textContent = generateRandomName();
-    document.querySelector('[data-score]').textContent = Math.round(Math.random() * 1000).toString();
+    // Highscore Submission
+    const playerElement = document.querySelector('[data-player]');
+    const scoreElement = document.querySelector('[data-score]');
+    const playerNameInput = document.getElementById('player-name');
+    const submitPlayerNameButton = document.getElementById('submit-player-name');
+    const playerInfo = document.getElementById('player-info');
+    const playerNameContainer = document.getElementById('player-name-container');
+
+    let player = 'Guest';
+
+    submitPlayerNameButton.addEventListener('click', () => {
+        player = playerNameInput.value.trim() || 'Guest';
+        playerElement.textContent = player;
+
+        const score = calculateHighscore(moves);
+        scoreElement.textContent = score;
+
+        // Hide input form & show player info
+        playerNameContainer.style.display = 'none';
+        playerInfo.style.display = 'block';
+
+        // Automatically send the score
+        fetch('submit-highscore.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ player: player, score: score })
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Highscore submitted successfully", data);
+            })
+            .catch(error => {
+                console.error("Error submitting highscore", error);
+            });
+    });
 </script>
+
 </body>
 </html>
